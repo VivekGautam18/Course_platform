@@ -7,11 +7,14 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
-  const { login, register, forgotPassword, toggleDemoAdmin, isAdmin } = useAuth();
+  const { login, register, forgotPassword } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
@@ -21,17 +24,56 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mode === 'login') {
-      const res = await login(email, password);
-      if (res.success) {
+
+    setError("");
+    setLoading(true);
+
+    try {
+
+      if (mode === "login") {
+
+        const res = await login(email, password);
+
+        if (!res.success) {
+          setError(res.message);
+          return;
+        }
+
         onSuccess();
+
+      } else {
+
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          return;
+        }
+
+        const res = await register(
+          name,
+          email,
+          phone,
+          password
+        );
+
+        if (!res.success) {
+          setError(res.message);
+          return;
+        }
+
+        alert(
+          "Registration successful. Please verify your email before logging in."
+        );
+
+        setMode("login");
+
       }
-    } else {
-      const res = await register(name, email, phone, 'student');
-      if (res.success) {
-        onSuccess();
-      }
+
+    } finally {
+
+      setLoading(false);
+
     }
+
   };
 
   const handleForgot = async (e: React.FormEvent) => {
@@ -106,6 +148,29 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
               />
             </div>
           </div>
+          {mode === "register" && (
+            <div>
+              <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Confirm Password *
+              </label>
+
+              <div className="relative">
+
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+
+                <input
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm Password"
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-900 dark:text-white"
+                />
+
+              </div>
+
+            </div>
+          )}
 
           {mode === 'register' && (
             <div>
@@ -136,30 +201,32 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
               </button>
             </div>
           )}
+          {
+            error && (
 
+              <div className="rounded-xl bg-red-100 border border-red-300 p-3 text-sm text-red-600">
+
+                {error}
+
+              </div>
+
+            )
+          }
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2"
           >
-            <span>{mode === 'login' ? 'Login to Portal' : 'Create Account'}</span>
+            <span>
+
+              {loading
+                ? "Please wait..."
+                : mode === "login" 
+                  ? "Login to Portal"
+                  : "Create Account"}
+            </span>
             <ArrowRight className="w-4 h-4" />
           </button>
-
-          {/* Quick Demo Admin Switcher */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 text-center space-y-1">
-            <p className="text-[11px] text-slate-500">Need to test Admin Panel capabilities?</p>
-            <button
-              type="button"
-              onClick={() => {
-                toggleDemoAdmin();
-                onSuccess();
-              }}
-              className="text-xs font-bold text-amber-600 hover:underline flex items-center justify-center gap-1 mx-auto"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>{isAdmin ? 'Currently Admin • Click to switch' : 'Click for Instant Demo Admin Login'}</span>
-            </button>
-          </div>
 
           <div className="text-center pt-2 text-xs text-slate-500">
             {mode === 'login' ? (

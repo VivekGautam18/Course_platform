@@ -213,6 +213,8 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
         onClose={() => setShowRazorpay(false)}
         title={`${mentorship.examTerm} - ${mentorship.groupType} Mentorship`}
         amount={mentorship.price}
+        itemType="mentorship"
+        itemId={mentorship.id}
         onSuccess={handlePaymentSuccess}
       />
     </>

@@ -1,28 +1,29 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import CloudinaryVideoUpload from "../components/admin/CloudinaryVideoUpload";
+import CloudinaryPdfUpload from "../components/admin/CloudinaryPdfUpload";
+import CloudinaryImageUpload from "../components/admin/CloudinaryImageupload";
 import {
   BookOpen,
   Plus,
   Trash2,
-  Edit,
-  DollarSign,
   Users,
   CreditCard,
   GraduationCap,
   Calendar,
   Star,
-  FileText,
-  Video,
-  CheckCircle,
   ShieldAlert,
-  Sparkles,
 } from 'lucide-react';
-import { Course, Chapter, Video as VideoType, PDFResource } from '../types';
+import { Course, Chapter } from '../types';
+
+const DEFAULT_COURSE_THUMBNAIL =
+  'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80';
 
 export const AdminPanelPage: React.FC = () => {
   const {
     courses,
     mentorships,
+    strategySessionPrice,
     testimonials,
     mentorshipEnrollments,
     strategyBookings,
@@ -31,6 +32,7 @@ export const AdminPanelPage: React.FC = () => {
     deleteCourse,
     addChapterToCourse,
     updateMentorshipPrice,
+    updateStrategySessionPrice,
     deleteTestimonial,
   } = useData();
 
@@ -45,23 +47,34 @@ export const AdminPanelPage: React.FC = () => {
   const [cCategory, setCCategory] = useState<'CA Inter' | 'CA Final'>('CA Inter');
   const [cGroup, setCGroup] = useState<'Group 1' | 'Group 2' | 'Both Groups'>('Group 1');
   const [cDescription, setCDescription] = useState('');
-  const [cThumbnail, setCThumbnail] = useState(
-    'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80'
-  );
+  const [cThumbnail, setCThumbnail] = useState(DEFAULT_COURSE_THUMBNAIL);
   const [cDuration, setCDuration] = useState('35 Hours');
   const [cPrice, setCPrice] = useState(1499);
   const [cOriginalPrice, setCOriginalPrice] = useState(2999);
 
   // Add Chapter / Video Modal State
+
   const [selectedCourseForChapter, setSelectedCourseForChapter] = useState<Course | null>(null);
   const [chapTitle, setChapTitle] = useState('');
   const [chapDesc, setChapDesc] = useState('');
   const [vidTitle, setVidTitle] = useState('');
-  const [vidUrl, setVidUrl] = useState(
-    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
-  );
+  const [vidUrl, setVidUrl] = useState('');
   const [vidDuration, setVidDuration] = useState('30:00');
   const [pdfTitle, setPdfTitle] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [savingChapter, setSavingChapter] = useState(false);
+
+  const resetCourseForm = () => {
+    setCTitle('');
+    setCSubject('Taxation');
+    setCCategory('CA Inter');
+    setCGroup('Group 1');
+    setCDescription('');
+    setCThumbnail(DEFAULT_COURSE_THUMBNAIL);
+    setCDuration('35 Hours');
+    setCPrice(1499);
+    setCOriginalPrice(2999);
+  };
 
   const handleCreateCourseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,76 +89,97 @@ export const AdminPanelPage: React.FC = () => {
       duration: cDuration,
       price: cPrice,
       originalPrice: cOriginalPrice,
-      chapters: [
-        {
-          id: `ch_init_${Date.now()}`,
-          title: 'Chapter 1: Foundations & Core Principles',
-          description: 'Basic introduction and exam-focused concepts',
-          videos: [
-            {
-              id: `v_init_${Date.now()}`,
-              title: '1. Introduction Lecture',
-              duration: '25:00',
-              videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-              isFreePreview: true,
-              order: 1,
-            },
-          ],
-          pdfs: [
-            {
-              id: `p_init_${Date.now()}`,
-              title: 'Handwritten Summary Notes',
-              type: 'notes',
-              fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-              pageCount: 20,
-              sizeMb: '2.5 MB',
-            },
-          ],
-        },
-      ],
+      chapters: [],
     });
     setShowAddCourseModal(false);
-    setCTitle('');
+    resetCourseForm();
   };
 
-  const handleAddChapterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCourseForChapter) return;
+  const handleAddChapter = async () => {
+    if (savingChapter) return;
 
-    const newChap: Omit<Chapter, 'id'> = {
-      title: chapTitle,
-      description: chapDesc,
-      videos: vidTitle
+    if (!selectedCourseForChapter) {
+      window.alert("Please select a course.");
+      return;
+    }
+
+    if (!chapTitle.trim()) {
+      window.alert("Please enter a chapter title.");
+      return;
+    }
+
+    const hasVideo = Boolean(vidUrl.trim());
+    const hasPdf = Boolean(pdfUrl.trim());
+
+    if (!hasVideo && !hasPdf) {
+      window.alert("Please upload a video or PDF first.");
+      return;
+    }
+
+    const now = Date.now();
+
+    const newChapter: Omit<Chapter, "id"> = {
+      title: chapTitle.trim(),
+      description: chapDesc.trim(),
+
+      videos: hasVideo
         ? [
             {
-              id: `v_${Date.now()}`,
-              title: vidTitle,
-              duration: vidDuration,
-              videoUrl: vidUrl,
-              isFreePreview: true,
+              id: `vid_${now}`,
+              title: vidTitle.trim() || "Video Lesson",
+              duration: vidDuration || "00:00",
+              videoUrl: vidUrl.trim(),
               order: 1,
             },
           ]
         : [],
-      pdfs: pdfTitle
+
+      pdfs: hasPdf
         ? [
             {
-              id: `p_${Date.now()}`,
-              title: pdfTitle,
-              type: 'notes',
-              fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-              pageCount: 30,
-              sizeMb: '3.0 MB',
+              id: `pdf_${now}`,
+              title: pdfTitle.trim() || "Course PDF Notes",
+              type: "notes",
+              fileUrl: pdfUrl.trim(),
             },
           ]
         : [],
     };
 
-    addChapterToCourse(selectedCourseForChapter.id, newChap);
-    setSelectedCourseForChapter(null);
-    setChapTitle('');
-    setVidTitle('');
-    setPdfTitle('');
+    try {
+      setSavingChapter(true);
+
+      await addChapterToCourse(
+        selectedCourseForChapter.id,
+        newChapter
+      );
+
+      setChapTitle("");
+      setChapDesc("");
+      setVidTitle("");
+      setVidUrl("");
+      setVidDuration("30:00");
+      setPdfTitle("");
+      setPdfUrl("");
+      setSelectedCourseForChapter(null);
+
+      if (hasVideo && hasPdf) {
+        window.alert("Video + PDF + Chapter saved successfully!");
+      } else if (hasVideo) {
+        window.alert("Video + Chapter saved successfully!");
+      } else {
+        window.alert("PDF + Chapter saved successfully!");
+      }
+    } catch (error) {
+      console.error("Failed to save chapter:", error);
+      window.alert(
+        `Failed to save chapter: ${
+          error instanceof Error ? error.message : "Please try again."
+        }`
+      );
+    } finally {
+      setSavingChapter(false);
+    }
   };
 
   return (
@@ -173,9 +207,8 @@ export const AdminPanelPage: React.FC = () => {
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         <button
           onClick={() => setActiveAdminTab('courses')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'courses' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'courses' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <BookOpen className="w-4 h-4" />
           <span>Manage Courses ({courses.length})</span>
@@ -183,9 +216,8 @@ export const AdminPanelPage: React.FC = () => {
 
         <button
           onClick={() => setActiveAdminTab('mentorship')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'mentorship' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'mentorship' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <GraduationCap className="w-4 h-4" />
           <span>Mentorship Programs</span>
@@ -193,9 +225,8 @@ export const AdminPanelPage: React.FC = () => {
 
         <button
           onClick={() => setActiveAdminTab('strategy')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'strategy' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'strategy' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <Calendar className="w-4 h-4" />
           <span>1:1 Strategy Calls ({strategyBookings.length})</span>
@@ -203,9 +234,8 @@ export const AdminPanelPage: React.FC = () => {
 
         <button
           onClick={() => setActiveAdminTab('testimonials')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'testimonials' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'testimonials' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <Star className="w-4 h-4" />
           <span>Student Reviews ({testimonials.length})</span>
@@ -213,9 +243,8 @@ export const AdminPanelPage: React.FC = () => {
 
         <button
           onClick={() => setActiveAdminTab('payments')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'payments' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'payments' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <CreditCard className="w-4 h-4" />
           <span>Razorpay Payment Audit ({payments.length})</span>
@@ -223,9 +252,8 @@ export const AdminPanelPage: React.FC = () => {
 
         <button
           onClick={() => setActiveAdminTab('students')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${
-            activeTab === 'students' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
+          className={`px-4 py-2.5 text-xs font-bold rounded-xl transition flex items-center gap-1.5 ${activeTab === 'students' ? 'bg-amber-600 text-white shadow-md' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            }`}
         >
           <Users className="w-4 h-4" />
           <span>Enrolled Students ({mentorshipEnrollments.length})</span>
@@ -241,6 +269,15 @@ export const AdminPanelPage: React.FC = () => {
               className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 space-y-4 shadow-sm hover:shadow-md transition flex flex-col justify-between"
             >
               <div className="space-y-3">
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="w-full h-36 object-cover rounded-2xl border border-slate-200 dark:border-slate-700"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_COURSE_THUMBNAIL;
+                  }}
+                />
+
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 px-2.5 py-0.5 rounded-md">
                     {course.category} • {course.group}
@@ -255,12 +292,13 @@ export const AdminPanelPage: React.FC = () => {
 
                 <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
                   <p className="font-bold text-slate-700 dark:text-slate-300">
-                    Chapters ({course.chapters.length}):
+                    Chapters ({course.chapters?.length ?? 0}):
                   </p>
+
                   <ul className="list-disc list-inside text-slate-500">
-                    {course.chapters.map((ch) => (
+                    {(course.chapters ?? []).map((ch) => (
                       <li key={ch.id} className="truncate">
-                        {ch.title} ({ch.videos.length} Vids, {ch.pdfs.length} PDFs)
+                        {ch.title} ({ch.videos?.length ?? 0} Vids, {ch.pdfs?.length ?? 0} PDFs)
                       </li>
                     ))}
                   </ul>
@@ -320,7 +358,17 @@ export const AdminPanelPage: React.FC = () => {
 
       {/* TAB: STRATEGY CALLS */}
       {activeTab === 'strategy' && (
-        <div className="space-y-3">
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center gap-3 max-w-sm">
+            <label className="text-xs font-semibold text-slate-500">Session Price (₹):</label>
+            <input
+              type="number"
+              value={strategySessionPrice}
+              onChange={(e) => updateStrategySessionPrice(Number(e.target.value))}
+              className="px-3 py-1.5 text-xs font-bold border border-slate-300 dark:border-slate-700 rounded-xl dark:bg-slate-900 dark:text-white"
+            />
+          </div>
+          <div className="space-y-3">
           {strategyBookings.map((sb) => (
             <div
               key={sb.id}
@@ -334,6 +382,7 @@ export const AdminPanelPage: React.FC = () => {
               <p className="text-slate-400 font-mono">Payment ID: {sb.paymentId} (₹{sb.amountPaid})</p>
             </div>
           ))}
+          </div>
         </div>
       )}
 
@@ -448,6 +497,34 @@ export const AdminPanelPage: React.FC = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="font-bold">Category</label>
+                  <select
+                    value={cCategory}
+                    onChange={(e) => setCCategory(e.target.value as 'CA Inter' | 'CA Final')}
+                    className="w-full p-2 border rounded-xl dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="CA Inter">CA Inter</option>
+                    <option value="CA Final">CA Final</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold">Group</label>
+                  <select
+                    value={cGroup}
+                    onChange={(e) =>
+                      setCGroup(e.target.value as 'Group 1' | 'Group 2' | 'Both Groups')
+                    }
+                    className="w-full p-2 border rounded-xl dark:bg-slate-800 dark:text-white"
+                  >
+                    <option value="Group 1">Group 1</option>
+                    <option value="Group 2">Group 2</option>
+                    <option value="Both Groups">Both Groups</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="font-bold">Description</label>
                 <textarea
@@ -457,10 +534,37 @@ export const AdminPanelPage: React.FC = () => {
                 />
               </div>
 
+              <div className="space-y-2 p-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl">
+                <label className="font-bold">Course Thumbnail</label>
+
+                <img
+                  src={cThumbnail}
+                  alt="Thumbnail preview"
+                  className="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_COURSE_THUMBNAIL;
+                  }}
+                />
+
+                <CloudinaryImageUpload onUploadComplete={(url) => setCThumbnail(url)} />
+
+                <label className="font-bold block pt-1">Or paste an image URL</label>
+                <input
+                  type="url"
+                  value={cThumbnail}
+                  onChange={(e) => setCThumbnail(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full p-2 border rounded-xl dark:bg-slate-800 dark:text-white"
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddCourseModal(false)}
+                  onClick={() => {
+                    setShowAddCourseModal(false);
+                    resetCourseForm();
+                  }}
                   className="px-4 py-2 bg-slate-100 rounded-xl"
                 >
                   Cancel
@@ -481,7 +585,7 @@ export const AdminPanelPage: React.FC = () => {
             <h3 className="font-bold text-slate-900 dark:text-white text-base">
               Add Chapter to {selectedCourseForChapter.title}
             </h3>
-            <form onSubmit={handleAddChapterSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleAddChapter} className="space-y-3 text-xs">
               <div>
                 <label className="font-bold">Chapter Title *</label>
                 <input
@@ -507,6 +611,14 @@ export const AdminPanelPage: React.FC = () => {
 
               <div>
                 <label className="font-bold">Video URL (HTML5 / Google Storage / MP4)</label>
+                <CloudinaryVideoUpload
+                  onUploadComplete={(url) => {
+                    setVidUrl(url);
+                    if (!vidTitle.trim()) {
+                      setVidTitle("Video Lesson");
+                    }
+                  }}
+                />
                 <input
                   type="url"
                   value={vidUrl}
@@ -516,7 +628,16 @@ export const AdminPanelPage: React.FC = () => {
               </div>
 
               <div>
+                <p className="text-red-600 font-bold">
+                  PDF UPLOADER TEST
+                </p>
+                <CloudinaryPdfUpload
+                  onUploadComplete={(url) => {
+                    setPdfUrl(url);
+                  }}
+                />
                 <label className="font-bold">Handwritten PDF Notes Title (Optional)</label>
+
                 <input
                   type="text"
                   value={pdfTitle}
@@ -534,8 +655,12 @@ export const AdminPanelPage: React.FC = () => {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl">
-                  Add Chapter
+                <button
+                  type="submit"
+                  disabled={savingChapter}
+                  className="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {savingChapter ? "Saving..." : "Add Chapter"}
                 </button>
               </div>
             </form>

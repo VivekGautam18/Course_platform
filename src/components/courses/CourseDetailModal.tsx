@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Course, Video, PDFResource } from '../../types';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   X,
   PlayCircle,
@@ -23,6 +24,8 @@ interface CourseDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenVideoPlayer?: (courseId: string, videoId: string) => void;
+  /** Called when a signed-out visitor tries to buy — should open the login modal. */
+  onRequireAuth?: () => void;
 }
 
 export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
@@ -30,8 +33,10 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   isOpen,
   onClose,
   onOpenVideoPlayer,
+  onRequireAuth,
 }) => {
   const { isCoursePurchased, unlockCourse } = useData();
+  const { isAuthenticated, user } = useAuth();
   const [activeChapterIndex, setActiveChapterIndex] = useState<number>(0);
   const [showRazorpay, setShowRazorpay] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<PDFResource | null>(null);
@@ -39,6 +44,17 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
   if (!isOpen || !course) return null;
 
   const purchased = isCoursePurchased(course.id);
+
+  const handleBuyClick = () => {
+    // Students must be logged in before checkout opens — unlockCourse writes
+    // the purchase onto the account, so there has to be an account to write it to.
+    if (!isAuthenticated) {
+      onClose();
+      onRequireAuth?.();
+      return;
+    }
+    setShowRazorpay(true);
+  };
 
   const handlePaymentSuccess = (paymentId: string) => {
     unlockCourse(course.id, { razorpayPaymentId: paymentId });
@@ -118,11 +134,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
                 </button>
               ) : (
                 <button
-                  onClick={() => setShowRazorpay(true)}
+                  onClick={handleBuyClick}
                   className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>Buy Course Now (₹{course.price})</span>
+                  <span>{isAuthenticated ? `Buy Course Now (₹${course.price})` : 'Login to Buy This Course'}</span>
                 </button>
               )}
             </div>
@@ -256,6 +272,11 @@ export const CourseDetailModal: React.FC<CourseDetailModalProps> = ({
         onClose={() => setShowRazorpay(false)}
         title={course.title}
         amount={course.price}
+        itemDescription={`Course purchase: ${course.title}`}
+        receiptId={`course_${course.id}_${user?.id || 'guest'}`}
+        itemType="course"
+        itemId={course.id}
+        prefill={{ name: user?.name, email: user?.email, contact: user?.phone }}
         onSuccess={handlePaymentSuccess}
       />
 

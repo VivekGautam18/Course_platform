@@ -27,7 +27,7 @@ export const StrategyBookingModal: React.FC<StrategyBookingModalProps> = ({
   onClose,
 }) => {
   const { user } = useAuth();
-  const { bookStrategySession } = useData();
+  const { bookStrategySession, strategySessionPrice } = useData();
 
   const [studentName, setStudentName] = useState(user?.name || '');
   const [studentEmail, setStudentEmail] = useState(user?.email || '');
@@ -58,7 +58,7 @@ export const StrategyBookingModal: React.FC<StrategyBookingModalProps> = ({
       date,
       timeSlot,
       primaryStruggle,
-      amountPaid: 799,
+      amountPaid: strategySessionPrice,
       paymentId,
     });
     setShowRazorpay(false);
@@ -81,7 +81,7 @@ export const StrategyBookingModal: React.FC<StrategyBookingModalProps> = ({
               <span className="text-xs font-bold uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-md">
                 1:1 Live Strategy Call
               </span>
-              <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded text-white">₹799</span>
+              <span className="text-xs font-bold bg-white/20 px-2 py-0.5 rounded text-white">₹{strategySessionPrice}</span>
             </div>
             <h3 className="text-xl font-bold mt-2">Book 1:1 Strategy Session with Sneha Gupta</h3>
             <p className="text-xs text-blue-100 mt-1">
@@ -219,7 +219,7 @@ export const StrategyBookingModal: React.FC<StrategyBookingModalProps> = ({
                   className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition"
                 >
                   <Zap className="w-4 h-4" />
-                  <span>Book Strategy Call Now (₹799)</span>
+                  <span>Book Strategy Call Now (₹{strategySessionPrice})</span>
                 </button>
               </div>
             </form>
@@ -231,7 +231,9 @@ export const StrategyBookingModal: React.FC<StrategyBookingModalProps> = ({
         isOpen={showRazorpay}
         onClose={() => setShowRazorpay(false)}
         title="1:1 Strategy Session with Sneha Gupta"
-        amount={799}
+        amount={strategySessionPrice}
+        itemType="strategy_session"
+        itemId="strategySession"
         onSuccess={handlePaymentSuccess}
       />
     </>

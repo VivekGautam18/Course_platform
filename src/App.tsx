@@ -17,6 +17,7 @@ import { CourseDetailModal } from './components/courses/CourseDetailModal';
 import { MentorshipFormModal } from './components/mentorship/MentorshipFormModal';
 import { StrategyBookingModal } from './components/strategy/StrategyBookingModal';
 import { StudyPlannerModal } from './components/planner/StudyPlannerModal';
+import { LegalPage } from './pages/LegalPage';
 import { Course, MentorshipOption } from './types';
 
 function MainAppContent() {
@@ -107,13 +108,17 @@ function MainAppContent() {
           )
         )}
 
-        {activeTab === 'admin' && (
-          isAdmin ? (
+        {activeTab === "admin" && (
+          isAuthenticated && isAdmin ? (
             <AdminPanelPage />
           ) : (
-            <AuthPage onSuccess={() => setActiveTab('admin')} />
+            <AuthPage onSuccess={() => setActiveTab("admin")} />
           )
         )}
+
+        {activeTab === 'privacy' && <LegalPage initialTab="privacy" />}
+        {activeTab === 'refund' && <LegalPage initialTab="refund" />}
+        {activeTab === 'terms' && <LegalPage initialTab="terms" />}
       </main>
 
       {/* Footer */}
@@ -125,6 +130,7 @@ function MainAppContent() {
         isOpen={!!selectedCourseForDetail}
         onClose={() => setSelectedCourseForDetail(null)}
         onOpenVideoPlayer={handleOpenVideoPlayer}
+        onRequireAuth={() => setIsAuthModalOpen(true)}
       />
 
       <MentorshipFormModal

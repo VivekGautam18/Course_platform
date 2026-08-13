@@ -92,6 +92,11 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
 
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} Sneha Gupta (CA Finalist). All Rights Reserved.</p>
+          <div className="flex items-center gap-4">
+            <button onClick={() => setActiveTab('privacy')} className="hover:text-blue-400 transition">Privacy Policy</button>
+            <button onClick={() => setActiveTab('refund')} className="hover:text-blue-400 transition">Refund Policy</button>
+            <button onClick={() => setActiveTab('terms')} className="hover:text-blue-400 transition">Terms & Conditions</button>
+          </div>
           <div className="flex items-center gap-1">
             <span>Designed for CA Aspirants with</span>
             <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 inline" />
