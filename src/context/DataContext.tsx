@@ -679,7 +679,9 @@ interface DataContextType {
       studentEmail: string;
       mobile: string;
       attempt: string;
-      college: string;
+      college?: string;
+      studyTimePerDay: string;
+      selectedGroup?: 'Group 1' | 'Group 2';
       currentPreparationLevel: string;
       amountPaid: number;
       paymentId: string;
@@ -969,7 +971,32 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: docSnap.id,
           ...docSnap.data(),
         })) as MentorshipOption[];
-        setMentorships(data);
+        // The program list and all card text come from the code in
+        // initialData.ts (so removed programs disappear and new ones appear
+        // immediately). Only the prices stay admin-editable via Firestore.
+        const merged = INITIAL_MENTORSHIPS.map((base) => {
+          const saved = data.find((m) => m.id === base.id);
+          return {
+            ...base,
+            price: typeof saved?.price === 'number' ? saved.price : base.price,
+            ...(typeof saved?.originalPrice === 'number' ? { originalPrice: saved.originalPrice } : {}),
+          };
+        });
+        setMentorships(merged);
+
+        // The server verifies prices against the 'mentorships' collection, so
+        // any program that has no document yet (e.g. a newly added one) is
+        // created the first time an admin opens the site.
+        if (user?.role === 'admin') {
+          const missing = INITIAL_MENTORSHIPS.filter((base) => !data.some((m) => m.id === base.id));
+          if (missing.length > 0) {
+            try {
+              await Promise.all(missing.map((m) => setDoc(doc(db, 'mentorships', m.id), m)));
+            } catch (error) {
+              console.error('Error seeding new mentorships:', error);
+            }
+          }
+        }
       },
       (error) => {
         console.error('DataContext: mentorships onSnapshot failed:', error);
@@ -1092,7 +1119,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       studentEmail: string;
       mobile: string;
       attempt: string;
-      college: string;
+      college?: string;
+      studyTimePerDay: string;
+      selectedGroup?: 'Group 1' | 'Group 2';
       currentPreparationLevel: string;
       amountPaid: number;
       paymentId: string;
@@ -1112,7 +1141,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       studentEmail: formData.studentEmail || user.email,
       mobile: formData.mobile,
       attempt: formData.attempt,
-      college: formData.college,
+      college: formData.college ?? '',
+      studyTimePerDay: formData.studyTimePerDay,
+      ...(formData.selectedGroup ? { selectedGroup: formData.selectedGroup } : {}),
       currentPreparationLevel: formData.currentPreparationLevel,
       mentorshipId,
       mentorshipTitle: `${mentorship.examTerm} - ${mentorship.groupType}`,
@@ -1326,7 +1357,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // will update local `mentorships` state once this write lands, so
     // every admin/student sees the new price, not just this browser.
     try {
-      await updateDoc(doc(db, 'mentorships', id), { price: newPrice });
+      await setDoc(doc(db, 'mentorships', id), { price: newPrice }, { merge: true });
     } catch (error) {
       console.error('Error updating mentorship price:', error);
     }

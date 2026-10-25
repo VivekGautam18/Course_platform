@@ -58,13 +58,20 @@ export interface Course {
 
 export interface MentorshipOption {
   id: string;
-  examTerm: 'CA Inter Sept 2026' | 'CA Inter Jan 2027';
-  groupType: 'Single Group' | 'Both Groups';
+  examTerm: 'CA Foundation Jan 2027' | 'CA Inter Jan 2027';
+  groupType: 'Single Group' | 'Both Groups' | 'All 4 Subjects';
+  /** Optional bold heading shown on the card instead of groupType. */
+  title?: string;
   price: number;
-  originalPrice: number;
+  /** Optional. Strikethrough price is shown only when this is higher than price. */
+  originalPrice?: number;
   description: string;
+  /** Optional validity note shown under the benefits. */
+  validity?: string;
   benefits: string[];
   weeklyPlan: { week: string; topic: string; goal: string }[];
+  /** Optional. When present, the mentorship card shows this block instead of the weekly blueprint. */
+  customPlan?: { title: string; before: string; bold: string; after: string };
 }
 
 export interface MentorshipEnrollment {
@@ -75,6 +82,10 @@ export interface MentorshipEnrollment {
   mobile: string;
   attempt: string;
   college: string;
+  /** Available study time per day, e.g. "4-6 hrs". */
+  studyTimePerDay?: string;
+  /** Only for Single Group mentorships: which group the student chose. */
+  selectedGroup?: 'Group 1' | 'Group 2';
   currentPreparationLevel: string;
   mentorshipId: string;
   mentorshipTitle: string;

@@ -136,7 +136,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-900 dark:text-white">ICAI Pattern</p>
-                    <p className="text-[10px] text-slate-500">Updated Sept 26 / Jan 27</p>
+                    <p className="text-[10px] text-slate-500">Updated for Jan 27</p>
                   </div>
                 </div>
               </div>
@@ -286,7 +286,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mentorships.map((m) => (
               <div
                 key={m.id}
@@ -297,7 +297,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <span className="text-[10px] font-bold uppercase bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded">
                       {m.examTerm}
                     </span>
-                    <h3 className="text-lg font-extrabold text-white mt-2">{m.groupType}</h3>
+                    <h3 className="text-lg font-extrabold text-white mt-2">{m.title ?? m.groupType}</h3>
                     <p className="text-xs text-slate-300 mt-1 line-clamp-2">{m.description}</p>
                   </div>
 
@@ -314,7 +314,9 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div className="space-y-3 pt-4 border-t border-slate-700">
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-black text-blue-400">₹{m.price.toLocaleString('en-IN')}</span>
-                    <span className="text-xs text-slate-500 line-through">₹{m.originalPrice}</span>
+                    {m.originalPrice && m.originalPrice > m.price && (
+                      <span className="text-xs text-slate-500 line-through">₹{m.originalPrice.toLocaleString('en-IN')}</span>
+                    )}
                   </div>
                   <button
                     onClick={() => onOpenMentorshipModal(m)}

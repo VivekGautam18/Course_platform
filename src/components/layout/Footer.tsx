@@ -46,7 +46,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
               </li>
               <li>
                 <button onClick={() => setActiveTab('mentorship')} className="hover:text-blue-400 transition">
-                  Mentorship Programs (Sept 26 / Jan 27)
+                  Mentorship Programs (Jan 27)
                 </button>
               </li>
               <li>
@@ -94,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
           <p>© {new Date().getFullYear()} Sneha Gupta (CA Finalist). All Rights Reserved.</p>
           <div className="flex items-center gap-4">
             <button onClick={() => setActiveTab('privacy')} className="hover:text-blue-400 transition">Privacy Policy</button>
-            <button onClick={() => setActiveTab('refund')} className="hover:text-blue-400 transition">Refund Policy</button>
+            <button onClick={() => setActiveTab('refund')} className="hover:text-blue-400 transition">Refund & Cancellation</button>
             <button onClick={() => setActiveTab('terms')} className="hover:text-blue-400 transition">Terms & Conditions</button>
           </div>
           <div className="flex items-center gap-1">

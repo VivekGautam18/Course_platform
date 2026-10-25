@@ -3,7 +3,15 @@ import { MentorshipOption } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { RazorpayModal } from '../payment/RazorpayModal';
-import { X, CheckCircle, ShieldCheck, User, Mail, Phone, GraduationCap, Award, ArrowRight } from 'lucide-react';
+import { X, CheckCircle, ShieldCheck, User, Mail, Phone, Clock, ArrowRight } from 'lucide-react';
+
+const PREP_LEVELS = [
+  'Just Starting — 0–25%',
+  'Early Preparation — 25–50%',
+  'Halfway There — 50–75%',
+  'Mostly Completed — 75–90%',
+  'Revision/Test Phase — 90%+',
+];
 
 interface MentorshipFormModalProps {
   mentorship: MentorshipOption | null;
@@ -22,17 +30,25 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
   const [studentName, setStudentName] = useState(user?.name || '');
   const [studentEmail, setStudentEmail] = useState(user?.email || '');
   const [mobile, setMobile] = useState(user?.phone || '');
-  const [attempt, setAttempt] = useState<string>(mentorship?.examTerm || 'CA Inter Sept 2026');
-  const [college, setCollege] = useState(user?.college || '');
-  const [prepLevel, setPrepLevel] = useState(user?.preparationLevel || '50% Syllabus Completed');
+  const [studyTime, setStudyTime] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<'' | 'Group 1' | 'Group 2'>('');
+  const [agreed, setAgreed] = useState(false);
+  const [prepLevel, setPrepLevel] = useState(
+    user?.preparationLevel && PREP_LEVELS.includes(user.preparationLevel) ? user.preparationLevel : PREP_LEVELS[0]
+  );
 
   const [showRazorpay, setShowRazorpay] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   if (!isOpen || !mentorship) return null;
 
+  // The target attempt is always the exam cycle of the program being bought.
+  const attempt = mentorship.examTerm;
+
   const handleSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreed) return;
+    if (mentorship.groupType === 'Single Group' && !selectedGroup) return;
     setShowRazorpay(true);
   };
 
@@ -42,7 +58,8 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
       studentEmail,
       mobile,
       attempt,
-      college,
+      studyTimePerDay: studyTime,
+      selectedGroup: mentorship.groupType === 'Single Group' && selectedGroup ? selectedGroup : undefined,
       currentPreparationLevel: prepLevel,
       amountPaid: mentorship.price,
       paymentId,
@@ -151,31 +168,50 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
                     </label>
                     <select
                       value={attempt}
-                      onChange={(e) => setAttempt(e.target.value)}
+                      disabled
                       className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-800 dark:text-white"
                     >
-                      <option value="CA Inter Sept 2026">CA Inter Sept 2026</option>
-                      <option value="CA Inter Jan 2027">CA Inter Jan 2027</option>
-                      <option value="CA Inter May 2027">CA Inter May 2027</option>
+                      <option value={attempt}>{attempt}</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-                      College / Coaching
+                      Available Study Time / Day *
                     </label>
                     <div className="relative">
-                      <GraduationCap className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                      <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                       <input
                         type="text"
-                        value={college}
-                        onChange={(e) => setCollege(e.target.value)}
-                        placeholder="e.g. St. Xaviers / Self Study"
+                        required
+                        value={studyTime}
+                        onChange={(e) => setStudyTime(e.target.value)}
+                        placeholder="e.g. Less than 4 hrs / 4-6 hrs"
                         className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-800 dark:text-white"
                       />
                     </div>
                   </div>
                 </div>
+
+                {mentorship.groupType === 'Single Group' && (
+                  <div>
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                      Select Group *
+                    </label>
+                    <select
+                      required
+                      value={selectedGroup}
+                      onChange={(e) => setSelectedGroup(e.target.value as '' | 'Group 1' | 'Group 2')}
+                      className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-800 dark:text-white"
+                    >
+                      <option value="" disabled>
+                        Select Group
+                      </option>
+                      <option value="Group 1">Group 1</option>
+                      <option value="Group 2">Group 2</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block mb-1">
@@ -186,20 +222,53 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
                     onChange={(e) => setPrepLevel(e.target.value)}
                     className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:bg-slate-800 dark:text-white"
                   >
-                    <option value="Just Starting (0-25%)">Just Starting (0-25% Done)</option>
-                    <option value="50% Preparation Done">50% Preparation Done</option>
-                    <option value="Revision & Test Series Stage">Revision & Test Series Stage</option>
-                    <option value="Repeat Attempt (Need Rank Strategy)">Repeat Attempt (Need Rank Strategy)</option>
+                    {PREP_LEVELS.map((level) => (
+                      <option key={level} value={level}>
+                        {level}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
 
+              <label className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300 leading-relaxed cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 shrink-0 accent-blue-600 cursor-pointer"
+                />
+                <span>
+                  I have read and agree to the{' '}
+                  <a
+                    href="/#terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 font-semibold underline"
+                  >
+                    Terms &amp; Conditions
+                  </a>{' '}
+                  and{' '}
+                  <a
+                    href="/#refund"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-400 font-semibold underline"
+                  >
+                    Refund &amp; Cancellation Policy
+                  </a>
+                  .
+                </span>
+              </label>
+
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition"
+                  disabled={!agreed}
+                  className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
                 >
-                  <span>Proceed to Payment (₹{mentorship.price.toLocaleString('en-IN')})</span>
+                  <span>Pay Now (₹{mentorship.price.toLocaleString('en-IN')}) &amp; Enroll</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -211,7 +280,7 @@ export const MentorshipFormModal: React.FC<MentorshipFormModalProps> = ({
       <RazorpayModal
         isOpen={showRazorpay}
         onClose={() => setShowRazorpay(false)}
-        title={`${mentorship.examTerm} - ${mentorship.groupType} Mentorship`}
+        title={`${mentorship.examTerm} - ${mentorship.groupType}${selectedGroup && mentorship.groupType === 'Single Group' ? ` (${selectedGroup})` : ''} Mentorship`}
         amount={mentorship.price}
         itemType="mentorship"
         itemId={mentorship.id}

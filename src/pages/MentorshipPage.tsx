@@ -44,14 +44,14 @@ export const MentorshipPage: React.FC<MentorshipPageProps> = ({ onOpenMentorship
           All Programs
         </button>
         <button
-          onClick={() => setSelectedExam('CA Inter Sept 2026')}
+          onClick={() => setSelectedExam('CA Foundation Jan 2027')}
           className={`px-5 py-2 text-xs font-semibold rounded-full transition ${
-            selectedExam === 'CA Inter Sept 2026'
+            selectedExam === 'CA Foundation Jan 2027'
               ? 'bg-[#2563EB] text-white shadow-md shadow-blue-500/20'
               : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
           }`}
         >
-          CA Inter Sept 2026
+          CA Foundation Jan 2027
         </button>
         <button
           onClick={() => setSelectedExam('CA Inter Jan 2027')}
@@ -83,12 +83,14 @@ export const MentorshipPage: React.FC<MentorshipPageProps> = ({ onOpenMentorship
                     <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
                       ₹{m.price.toLocaleString('en-IN')}
                     </span>
-                    <span className="text-xs text-slate-400 line-through ml-2">₹{m.originalPrice}</span>
+                    {m.originalPrice && m.originalPrice > m.price && (
+                      <span className="text-xs text-slate-400 line-through ml-2">₹{m.originalPrice.toLocaleString('en-IN')}</span>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{m.groupType}</h3>
+                  <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">{m.title ?? m.groupType}</h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                     {m.description}
                   </p>
@@ -109,7 +111,25 @@ export const MentorshipPage: React.FC<MentorshipPageProps> = ({ onOpenMentorship
                   </ul>
                 </div>
 
-                {/* Weekly Timeline Plan */}
+                {m.validity && (
+                  <p className="text-xs text-slate-600 dark:text-slate-300 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <strong className="text-slate-900 dark:text-white">Validity:</strong> {m.validity}
+                  </p>
+                )}
+
+                {m.customPlan ? (
+                  <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      {m.customPlan.title}
+                    </p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                      {m.customPlan.before}
+                      <strong className="text-slate-900 dark:text-white">{m.customPlan.bold}</strong>
+                      {m.customPlan.after}
+                    </p>
+                  </div>
+                ) : m.weeklyPlan.length > 0 ? (
+                  <>
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                     Structured Weekly Blueprint
@@ -126,6 +146,8 @@ export const MentorshipPage: React.FC<MentorshipPageProps> = ({ onOpenMentorship
                     ))}
                   </div>
                 </div>
+                  </>
+                ) : null}
               </div>
 
               <div className="pt-4 border-t border-slate-100 dark:border-slate-700">

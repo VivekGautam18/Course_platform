@@ -24,7 +24,11 @@ function MainAppContent() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { courses } = useData();
 
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    // Lets links like /#terms open the policy pages directly (e.g. in a new tab).
+    const hash = window.location.hash.replace('#', '');
+    return ['terms', 'refund', 'privacy'].includes(hash) ? hash : 'home';
+  });
 
   // Video player state
   const [activePlayerCourseId, setActivePlayerCourseId] = useState<string | null>(null);
@@ -116,9 +120,9 @@ function MainAppContent() {
           )
         )}
 
-        {activeTab === 'privacy' && <LegalPage initialTab="privacy" />}
-        {activeTab === 'refund' && <LegalPage initialTab="refund" />}
-        {activeTab === 'terms' && <LegalPage initialTab="terms" />}
+        {activeTab === 'terms' && <LegalPage page="terms" setActiveTab={setActiveTab} />}
+        {activeTab === 'refund' && <LegalPage page="refund" setActiveTab={setActiveTab} />}
+        {activeTab === 'privacy' && <LegalPage page="privacy" setActiveTab={setActiveTab} />}
       </main>
 
       {/* Footer */}

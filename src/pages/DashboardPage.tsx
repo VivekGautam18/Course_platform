@@ -774,7 +774,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   <div className="text-xs text-slate-500 space-y-1">
                     <p>Student: {e.studentName} ({e.mobile})</p>
                     <p>Current Prep Level: {e.currentPreparationLevel}</p>
-                    <p>College: {e.college}</p>
+                    {e.selectedGroup && <p>Group: {e.selectedGroup}</p>}
+                    {e.studyTimePerDay && <p>Study Time / Day: {e.studyTimePerDay}</p>}
+                    {e.college && <p>College: {e.college}</p>}
                   </div>
                   <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-xl border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300">
                     <strong>WhatsApp Support Active:</strong> Sneha Gupta has received your profile and will send your weekly targets directly on WhatsApp!

@@ -339,7 +339,7 @@ export const AdminPanelPage: React.FC = () => {
                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md">
                   {m.examTerm}
                 </span>
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{m.groupType}</h4>
+                <h4 className="text-lg font-bold text-slate-900 dark:text-white mt-1">{m.title ?? m.groupType}</h4>
               </div>
 
               <div className="flex items-center gap-3">
@@ -449,7 +449,12 @@ export const AdminPanelPage: React.FC = () => {
                 <span>{me.studentName} ({me.mobile})</span>
                 <span className="text-blue-600">{me.mentorshipTitle}</span>
               </div>
-              <p className="text-slate-500">Attempt: {me.attempt} • College: {me.college}</p>
+              <p className="text-slate-500">
+                Attempt: {me.attempt}
+                {me.selectedGroup ? ` • Group: ${me.selectedGroup}` : ''}
+                {me.studyTimePerDay ? ` • Study Time/Day: ${me.studyTimePerDay}` : ''}
+                {me.college ? ` • College: ${me.college}` : ''}
+              </p>
               <p className="text-slate-500">Preparation Level: {me.currentPreparationLevel}</p>
             </div>
           ))}

@@ -1,215 +1,127 @@
-import React, { useState } from 'react';
-import { ShieldCheck, RefreshCw, FileText } from 'lucide-react';
-
-// NOTE FOR THE SITE OWNER: the text below is a starting-point template, not
-// legal advice. Replace the bracketed [placeholders] with your real
-// business details, and consider having a lawyer review this before you
-// go live and start accepting real payments -- Razorpay's live-mode
-// activation checks that pages like these exist and are accurate.
-
-type LegalTab = 'privacy' | 'refund' | 'terms';
+import React, { useEffect } from 'react';
+import { ShieldCheck, RefreshCw, FileText, ExternalLink, Info } from 'lucide-react';
+import { LEGAL_DOCS, LegalPageId, Block } from './LegalContent';
 
 interface LegalPageProps {
-  initialTab?: LegalTab;
+  /** Which policy to show. Each policy is its own page. */
+  page: LegalPageId;
+  setActiveTab: (tab: string) => void;
 }
 
-export const LegalPage: React.FC<LegalPageProps> = ({ initialTab = 'privacy' }) => {
-  const [tab, setTab] = useState<LegalTab>(initialTab);
+const NAV: { id: LegalPageId; label: string; icon: React.ReactNode }[] = [
+  { id: 'terms', label: 'Terms & Conditions', icon: <FileText className="w-4 h-4" /> },
+  { id: 'refund', label: 'Refund & Cancellation', icon: <RefreshCw className="w-4 h-4" /> },
+  { id: 'privacy', label: 'Privacy Policy', icon: <ShieldCheck className="w-4 h-4" /> },
+];
 
-  const tabs: { id: LegalTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'privacy', label: 'Privacy Policy', icon: <ShieldCheck className="w-4 h-4" /> },
-    { id: 'refund', label: 'Refund & Cancellation', icon: <RefreshCw className="w-4 h-4" /> },
-    { id: 'terms', label: 'Terms & Conditions', icon: <FileText className="w-4 h-4" /> },
-  ];
+const renderBlock = (b: Block, i: number) => {
+  switch (b.t) {
+    case 'p':
+      return (
+        <p key={i} className="text-slate-600 dark:text-slate-300">
+          {b.text}
+        </p>
+      );
+    case 'sub':
+      return (
+        <h3 key={i} className="font-bold text-slate-900 dark:text-white pt-1">
+          {b.text}
+        </h3>
+      );
+    case 'ul':
+      return (
+        <ul key={i} className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-300 marker:text-blue-500">
+          {b.items.map((it, j) => (
+            <li key={j}>{it}</li>
+          ))}
+        </ul>
+      );
+    case 'contact':
+      return (
+        <div
+          key={i}
+          className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800"
+        >
+          {b.rows.map((r, j) => (
+            <div key={j} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 px-4 py-3">
+              <span className="w-32 shrink-0 text-xs font-bold uppercase tracking-wider text-slate-500">{r.label}</span>
+              {r.href ? (
+                <a
+                  href={r.href}
+                  target={r.href.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 font-medium break-all hover:underline inline-flex items-center gap-1"
+                >
+                  {r.value}
+                  {r.href.startsWith('http') && <ExternalLink className="w-3.5 h-3.5 shrink-0" />}
+                </a>
+              ) : (
+                <span className="text-slate-800 dark:text-slate-200 font-medium">{r.value}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+  }
+};
+
+export const LegalPage: React.FC<LegalPageProps> = ({ page, setActiveTab }) => {
+  const doc = LEGAL_DOCS[page];
+
+  // Start each policy at the top when navigating between them.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [page]);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
-        {tabs.map((t) => (
+      {/* Switch between the three pages */}
+      <nav aria-label="Legal pages" className="flex flex-wrap gap-2 mb-8 border-b border-slate-200 dark:border-slate-800 pb-4">
+        {NAV.map((n) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
+            key={n.id}
+            onClick={() => setActiveTab(n.id)}
+            aria-current={page === n.id ? 'page' : undefined}
             className={`px-4 py-2 text-sm font-semibold rounded-xl flex items-center gap-2 transition ${
-              tab === t.id
+              page === n.id
                 ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            {t.icon}
-            {t.label}
+            {n.icon}
+            {n.label}
           </button>
         ))}
-      </div>
+      </nav>
 
-      <div className="prose prose-slate dark:prose-invert max-w-none text-sm leading-relaxed">
-        {tab === 'privacy' && (
-          <div className="space-y-5">
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Privacy Policy</h1>
-            <p className="text-slate-500 text-xs">Last updated: [DD Month YYYY]</p>
+      <header className="mb-8 space-y-2">
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{doc.title}</h1>
+        <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{doc.subtitle}</p>
+        <p className="text-xs text-slate-500">Last updated: {doc.lastUpdated}</p>
+      </header>
 
-            <p>
-              This Privacy Policy explains how <strong>[Business/Owner Legal Name]</strong> ("we", "us",
-              "our"), operating this website for Sneha Gupta (CA Finalist)'s courses and mentorship
-              programs, collects, uses, and protects information about visitors and students ("you").
-            </p>
+      {doc.highlights && (
+        <aside className="mb-8 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/30 p-5">
+          <p className="flex items-center gap-2 text-sm font-bold text-blue-800 dark:text-blue-300 mb-3">
+            <Info className="w-4 h-4" />
+            {doc.highlights.title}
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-sm text-slate-700 dark:text-slate-300 marker:text-blue-500">
+            {doc.highlights.points.map((p, i) => (
+              <li key={i}>{p}</li>
+            ))}
+          </ul>
+        </aside>
+      )}
 
-            <h3 className="font-bold text-slate-900 dark:text-white">Information We Collect</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Account details you provide: name, email address, phone number, college, and exam attempt.</li>
-              <li>Payment-related information processed via Razorpay (we never see or store your full card, UPI, or bank details -- Razorpay handles that directly).</li>
-              <li>Course progress and activity within your account (videos watched, purchases made).</li>
-              <li>Basic technical data such as browser type, for keeping the site working correctly.</li>
-            </ul>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">How We Use Your Information</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>To create and manage your account and give you access to purchased courses/programs.</li>
-              <li>To process payments and maintain records of transactions.</li>
-              <li>To contact you about your enrollment, mentorship sessions, or support requests.</li>
-              <li>To improve the site and course content.</li>
-            </ul>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Data Sharing</h3>
-            <p>
-              We do not sell your personal information. We share the minimum necessary data with
-              trusted service providers who help us run this site -- currently <strong>Razorpay</strong>{' '}
-              (payment processing) and <strong>Google Firebase</strong> (account login and data storage) -- 
-              solely to provide the service to you.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Data Security</h3>
-            <p>
-              We use industry-standard measures (including encrypted connections and access-controlled
-              databases) to protect your data. No online system is 100% secure, but we take reasonable
-              steps to safeguard your information.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Your Rights</h3>
-            <p>
-              You may request access to, correction of, or deletion of your personal data by contacting
-              us at <strong>[support email]</strong>.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Contact Us</h3>
-            <p>
-              For any privacy-related questions, reach out at <strong>[support email]</strong> or{' '}
-              <strong>[WhatsApp/phone number]</strong>.
-            </p>
-          </div>
-        )}
-
-        {tab === 'refund' && (
-          <div className="space-y-5">
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Refund & Cancellation Policy</h1>
-            <p className="text-slate-500 text-xs">Last updated: [DD Month YYYY]</p>
-
-            <p>
-              This policy applies to all purchases made on this website, including chapter-wise courses,
-              mentorship programs, and 1:1 strategy sessions.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Digital Courses</h3>
-            <p>
-              [Example -- edit to match your actual policy:] Once a course is purchased and content has
-              been accessed, it is generally non-refundable, since it is a digital product delivered
-              instantly. If you did not access any content, you may request a refund within{' '}
-              <strong>[X days]</strong> of purchase by emailing <strong>[support email]</strong>.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Mentorship Programs</h3>
-            <p>
-              [Example -- edit to match your actual policy:] Mentorship program fees are refundable
-              within <strong>[X days]</strong> of enrollment if no sessions have been attended. After
-              that period, or once sessions begin, fees are non-refundable.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">1:1 Strategy Sessions</h3>
-            <p>
-              [Example -- edit to match your actual policy:] You may reschedule a booked session by
-              contacting us at least <strong>[X hours]</strong> before the scheduled time. Sessions
-              missed without notice are non-refundable.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Failed / Duplicate Payments</h3>
-            <p>
-              If money was deducted from your account but the purchase did not reflect in your account
-              (course/mentorship not unlocked), please contact us with your payment ID at{' '}
-              <strong>[support email]</strong> and we will investigate and process a refund if the
-              payment was not successfully captured on our end.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">How Refunds Are Processed</h3>
-            <p>
-              Approved refunds are processed via Razorpay back to your original payment method, typically
-              within <strong>[5-7 business days]</strong>.
-            </p>
-          </div>
-        )}
-
-        {tab === 'terms' && (
-          <div className="space-y-5">
-            <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Terms & Conditions</h1>
-            <p className="text-slate-500 text-xs">Last updated: [DD Month YYYY]</p>
-
-            <p>
-              By accessing or using this website, you agree to the following terms. If you do not agree,
-              please do not use this site.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Who We Are</h3>
-            <p>
-              This website is operated by <strong>[Business/Owner Legal Name]</strong>, providing
-              educational courses and mentorship for CA Foundation/Inter/Final students under the "Sneha
-              Gupta (CA Finalist)" brand. This is an independent educational service and is not
-              affiliated with or endorsed by ICAI.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Account & Eligibility</h3>
-            <p>
-              You must provide accurate information when creating an account. You are responsible for
-              keeping your login credentials secure and for all activity under your account.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Purchases & Payments</h3>
-            <p>
-              All prices are listed in Indian Rupees (INR) and are inclusive/exclusive of applicable
-              taxes as shown at checkout. Payments are processed securely via Razorpay. Access to
-              purchased courses/programs is granted to your registered account only and may not be
-              shared, resold, or transferred.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Content Usage</h3>
-            <p>
-              All course materials (videos, notes, PDFs) are for your personal, non-commercial use only.
-              Downloading, recording, redistributing, or sharing course content outside your account is
-              prohibited and may result in account termination without refund.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">No Guarantee of Results</h3>
-            <p>
-              While we aim to provide high-quality educational content and mentorship, we do not
-              guarantee specific exam results or outcomes.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Limitation of Liability</h3>
-            <p>
-              To the extent permitted by law, we are not liable for any indirect or consequential loss
-              arising from your use of this website or its content.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Changes to These Terms</h3>
-            <p>
-              We may update these Terms from time to time. Continued use of the site after changes means
-              you accept the updated Terms.
-            </p>
-
-            <h3 className="font-bold text-slate-900 dark:text-white">Contact</h3>
-            <p>
-              Questions about these Terms can be sent to <strong>[support email]</strong>.
-            </p>
-          </div>
-        )}
-      </div>
+      <article className="space-y-8 text-sm leading-relaxed">
+        {doc.sections.map((s, i) => (
+          <section key={i} className="space-y-3">
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{s.heading}</h2>
+            {s.blocks.map(renderBlock)}
+          </section>
+        ))}
+      </article>
     </div>
   );
 };
