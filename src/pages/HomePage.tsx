@@ -1,6 +1,7 @@
 import React from 'react';
 import { Course, MentorshipOption } from '../types';
 import { useData } from '../context/DataContext';
+import portrait from '../images/potrait.jpeg';
 import {
   Sparkles,
   BookOpen,
@@ -116,7 +117,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 {/* Portrait Placeholder Container */}
                 <div className="relative w-full max-w-[340px] h-[460px] bg-white dark:bg-slate-900 rounded-[36px] shadow-2xl border-8 border-white dark:border-slate-800 overflow-hidden flex flex-col">
                   <img
-                    src="src/images/potrait.jpeg"
+                    src={portrait}
                     alt="Sneha Gupta CA Finalist"
                     className="w-full h-full object-cover"
                   />
