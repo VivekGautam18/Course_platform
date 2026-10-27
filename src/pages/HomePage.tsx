@@ -116,7 +116,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 {/* Portrait Placeholder Container */}
                 <div className="relative w-full max-w-[340px] h-[460px] bg-white dark:bg-slate-900 rounded-[36px] shadow-2xl border-8 border-white dark:border-slate-800 overflow-hidden flex flex-col">
                   <img
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80"
+                    src="src/images/potrait.jpeg"
                     alt="Sneha Gupta CA Finalist"
                     className="w-full h-full object-cover"
                   />

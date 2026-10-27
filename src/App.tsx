@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 import { Navbar } from './components/layout/Navbar';
@@ -20,15 +20,24 @@ import { StudyPlannerModal } from './components/planner/StudyPlannerModal';
 import { LegalPage } from './pages/LegalPage';
 import { Course, MentorshipOption } from './types';
 
+const KNOWN_TABS = [
+  'home', 'courses', 'mentorship', 'strategy', 'reviews',
+  'dashboard', 'admin', 'terms', 'refund', 'privacy',
+];
+
+const getTabFromLocation = () => {
+  const hash = window.location.hash.replace('#', '');
+  return KNOWN_TABS.includes(hash) ? hash : 'home';
+};
+
+const urlForTab = (tab: string) =>
+  tab === 'home' ? window.location.pathname + window.location.search : `#${tab}`;
+
 function MainAppContent() {
   const { isAuthenticated, isAdmin } = useAuth();
   const { courses } = useData();
 
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    // Lets links like /#terms open the policy pages directly (e.g. in a new tab).
-    const hash = window.location.hash.replace('#', '');
-    return ['terms', 'refund', 'privacy'].includes(hash) ? hash : 'home';
-  });
+  const [activeTab, setActiveTabState] = useState<string>(getTabFromLocation);
 
   // Video player state
   const [activePlayerCourseId, setActivePlayerCourseId] = useState<string | null>(null);
@@ -40,6 +49,58 @@ function MainAppContent() {
   const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
   const [isPlannerModalOpen, setIsPlannerModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // ---- Browser Back button support -------------------------------------
+  // The app switches pages with state (no router), so without this the Back
+  // button leaves the site and closes Chrome. Every page change and every
+  // popup/video player now gets its own history entry.
+  const overlayOpen = !!(
+    activePlayerCourseId ||
+    selectedCourseForDetail ||
+    selectedMentorshipForEnroll ||
+    isStrategyModalOpen ||
+    isPlannerModalOpen ||
+    isAuthModalOpen
+  );
+  const overlayPushed = useRef(false);
+
+  const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
+    if (tab === getTabFromLocation() && !overlayPushed.current) return;
+    if (overlayPushed.current) {
+      // A popup was open: reuse its history entry instead of leaving a stray one.
+      window.history.replaceState({ tab }, '', urlForTab(tab));
+      overlayPushed.current = false;
+    } else {
+      window.history.pushState({ tab }, '', urlForTab(tab));
+    }
+    window.scrollTo({ top: 0 });
+  };
+
+  useEffect(() => {
+    if (overlayOpen && !overlayPushed.current) {
+      window.history.pushState({ overlay: true }, '');
+      overlayPushed.current = true;
+    } else if (!overlayOpen && overlayPushed.current) {
+      overlayPushed.current = false;
+      if (window.history.state?.overlay) window.history.back();
+    }
+  }, [overlayOpen]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      overlayPushed.current = false;
+      setActiveTabState(getTabFromLocation());
+      setActivePlayerCourseId(null);
+      setSelectedCourseForDetail(null);
+      setSelectedMentorshipForEnroll(null);
+      setIsStrategyModalOpen(false);
+      setIsPlannerModalOpen(false);
+      setIsAuthModalOpen(false);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   const handleOpenVideoPlayer = (courseId: string, videoId: string) => {
     setActivePlayerCourseId(courseId);
