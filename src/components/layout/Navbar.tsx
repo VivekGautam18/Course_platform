@@ -10,7 +10,6 @@ import {
   X,
   Moon,
   Sun,
-  ShieldAlert,
   Award,
   Calendar,
   Layers,
@@ -31,17 +30,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenStudyPlanner,
   onOpenAuthModal,
 }) => {
-  const { user, isAuthenticated, isAdmin, logout, toggleDemoAdmin } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    return document.documentElement.classList.contains('dark');
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+    } catch {
+      // localStorage unavailable -- fall back to system preference
+    }
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    document.documentElement.classList.toggle('dark', isDarkMode);
+    try {
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    } catch {
+      // ignore storage errors
     }
   }, [isDarkMode]);
 
@@ -111,20 +117,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Toggle Dark/Light Mode"
             >
               {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* Admin Toggle Button */}
-            <button
-              onClick={toggleDemoAdmin}
-              className={`px-3 py-1.5 text-xs font-bold rounded-full transition flex items-center gap-1.5 border ${
-                isAdmin
-                  ? 'bg-amber-500/10 text-amber-600 border-amber-300 dark:text-amber-400'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
-              }`}
-              title="Switch between Student and Admin mode"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>{isAdmin ? 'Admin Mode ON' : 'Switch to Admin'}</span>
             </button>
 
             {/* User Auth state */}
@@ -232,17 +224,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
-            <button
-              onClick={() => {
-                toggleDemoAdmin();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full py-2.5 px-4 text-xs font-bold rounded-xl bg-amber-500/10 text-amber-600 border border-amber-300 flex items-center justify-center gap-2"
-            >
-              <ShieldAlert className="w-4 h-4" />
-              <span>{isAdmin ? 'Admin Mode Active' : 'Switch to Admin Demo'}</span>
-            </button>
-
             {isAuthenticated ? (
               <>
                 <button

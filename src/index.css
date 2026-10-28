@@ -1,1 +1,4 @@
 @import "tailwindcss";
+
+/* Make Tailwind's dark: classes follow the .dark class set by the toggle button */
+@custom-variant dark (&:where(.dark, .dark *));

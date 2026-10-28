@@ -75,7 +75,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <button
                   onClick={() => setActiveTab('mentorship')}
-                  className="px-8 py-4 bg-white border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition active:scale-95"
+                  className="px-8 py-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white font-bold text-sm rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2 transition active:scale-95"
                 >
                   <GraduationCap className="w-4 h-4 text-[#2563EB]" />
                   <span>Join Mentorship</span>
