@@ -75,7 +75,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <button
                   onClick={() => setActiveTab('mentorship')}
-                  className="px-8 py-4 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white font-bold text-sm rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2 transition active:scale-95"
+                  className="px-8 py-4 bg-white border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-sm rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition active:scale-95"
                 >
                   <GraduationCap className="w-4 h-4 text-[#2563EB]" />
                   <span>Join Mentorship</span>
@@ -93,16 +93,16 @@ export const HomePage: React.FC<HomePageProps> = ({
               {/* Quick Stats Strip */}
               <div className="flex flex-wrap gap-8 sm:gap-12 border-t border-slate-100 dark:border-slate-800 pt-8 mt-8">
                 <div>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white">5,000+</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">100+</p>
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Students Mentored</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-[#2563EB]">94%</p>
+                  <p className="text-2xl font-bold text-[#2563EB]">90%</p>
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Exam Pass Rate</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">100+</p>
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Tax Exemptions</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">4,600+</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Trusted Subscribers</p>
                 </div>
               </div>
             </div>

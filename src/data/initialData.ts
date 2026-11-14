@@ -275,8 +275,8 @@ export const INITIAL_MENTORSHIPS: MentorshipOption[] = [
     id: 'm_jan27_single',
     examTerm: 'CA Inter Jan 2027',
     groupType: 'Single Group',
-    price: 3000,
-    originalPrice: 4500,
+    price: 2000,
+    originalPrice: 3000,
     description: 'Personalized mentorship for students preparing one group of CA Inter Jan 2027.',
     benefits: [
       '30-Minute Personalized Strategy Call',
@@ -370,7 +370,7 @@ export const INITIAL_TESTIMONIALS: Testimonial[] = [
 export const FREQUENTLY_ASKED_QUESTIONS = [
   {
     question: 'Who is Sneha Gupta?',
-    answer: 'Sneha Gupta is a CA Finalist, academic mentor, and educator who has guided over 5,000+ CA aspirants to clear CA Inter and Foundation exams. She specializes in high-yield exam strategy, simplified Tax & Audit notes, and structured 1:1 mentorship.',
+    answer: 'Sneha Gupta is a CA Finalist, academic mentor, and educator who has guided 100+ CA aspirants to clear CA Inter and Foundation exams. She specializes in high-yield exam strategy, simplified Tax & Audit notes, and structured 1:1 mentorship.',
   },
   {
     question: 'How do I access courses after purchasing?',

@@ -26,7 +26,7 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
             </p>
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>5,000+ Students Mentored • 94% Exam Pass Rate</span>
+              <span>100+ Students Mentored • 90% Exam Pass Rate</span>
             </div>
           </div>
 
