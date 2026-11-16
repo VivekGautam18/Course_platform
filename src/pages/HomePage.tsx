@@ -52,7 +52,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               <h1 className="text-4xl sm:text-6xl font-bold leading-[1.1] text-slate-900 dark:text-white tracking-tight">
-                Master CA Inter & Final with{' '}
+                Master CA Inter & Foundation with{' '}
                 <span className="text-[#2563EB]">
                   Targeted Strategy
                 </span>{' '}

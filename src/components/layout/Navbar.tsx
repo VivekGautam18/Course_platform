@@ -14,31 +14,22 @@ import {
   Calendar,
   Layers,
   MessageSquare,
-  Calculator,
 } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onOpenStudyPlanner: () => void;
   onOpenAuthModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
-  onOpenStudyPlanner,
   onOpenAuthModal,
 }) => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    try {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
-    } catch {
-      // localStorage unavailable -- fall back to system preference
-    }
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    return document.documentElement.classList.contains('dark');
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -47,7 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     try {
       localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     } catch {
-      // ignore storage errors
+      /* storage unavailable: theme just won't be remembered */
     }
   }, [isDarkMode]);
 
@@ -99,13 +90,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             ))}
 
-            <button
-              onClick={onOpenStudyPlanner}
-              className="px-3.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 rounded-full hover:bg-indigo-100 transition flex items-center gap-1.5"
-            >
-              <Calculator className="w-3.5 h-3.5" />
-              <span>Study Planner</span>
-            </button>
           </nav>
 
           {/* Right Controls */}
@@ -211,16 +195,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {item.label}
               </button>
             ))}
-            <button
-              onClick={() => {
-                onOpenStudyPlanner();
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full text-left px-4 py-3 rounded-xl font-semibold text-sm text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 flex items-center gap-2"
-            >
-              <Calculator className="w-4 h-4" />
-              <span>Smart Study Planner</span>
-            </button>
           </div>
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">

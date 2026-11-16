@@ -16,7 +16,6 @@ import { VideoPlayerView } from './components/player/VideoPlayerView';
 import { CourseDetailModal } from './components/courses/CourseDetailModal';
 import { MentorshipFormModal } from './components/mentorship/MentorshipFormModal';
 import { StrategyBookingModal } from './components/strategy/StrategyBookingModal';
-import { StudyPlannerModal } from './components/planner/StudyPlannerModal';
 import { LegalPage } from './pages/LegalPage';
 import { Course, MentorshipOption } from './types';
 
@@ -47,7 +46,6 @@ function MainAppContent() {
   const [selectedCourseForDetail, setSelectedCourseForDetail] = useState<Course | null>(null);
   const [selectedMentorshipForEnroll, setSelectedMentorshipForEnroll] = useState<MentorshipOption | null>(null);
   const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
-  const [isPlannerModalOpen, setIsPlannerModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // ---- Browser Back button support -------------------------------------
@@ -59,7 +57,6 @@ function MainAppContent() {
     selectedCourseForDetail ||
     selectedMentorshipForEnroll ||
     isStrategyModalOpen ||
-    isPlannerModalOpen ||
     isAuthModalOpen
   );
   const overlayPushed = useRef(false);
@@ -95,7 +92,6 @@ function MainAppContent() {
       setSelectedCourseForDetail(null);
       setSelectedMentorshipForEnroll(null);
       setIsStrategyModalOpen(false);
-      setIsPlannerModalOpen(false);
       setIsAuthModalOpen(false);
     };
     window.addEventListener('popstate', onPopState);
@@ -127,7 +123,6 @@ function MainAppContent() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenStudyPlanner={() => setIsPlannerModalOpen(true)}
         onOpenAuthModal={() => {
           if (isAuthenticated) {
             setActiveTab('dashboard');
@@ -207,11 +202,6 @@ function MainAppContent() {
       <StrategyBookingModal
         isOpen={isStrategyModalOpen}
         onClose={() => setIsStrategyModalOpen(false)}
-      />
-
-      <StudyPlannerModal
-        isOpen={isPlannerModalOpen}
-        onClose={() => setIsPlannerModalOpen(false)}
       />
 
       {/* Login Modal Overlay */}
